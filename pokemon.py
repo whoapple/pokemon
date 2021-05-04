@@ -36,9 +36,10 @@ class Pokemon:
 
 class Player:
     def __init__(self):
-        self.inventory = {'витаминка':0, "покебол":0}
+        self.inventory = {'малое зелье здоровья':0, "покебол":0, 'зелье здоровья':0, 'большое зелье здоровья':0, 'зелье силы':0}
         self.pokemon_list = []
         self.current_pokemon = ''
+        self.money = 0
 
 
 def fight():
@@ -134,8 +135,40 @@ def heal():
 
 
 def shop():
-    better_print('добро пожаловать в магазин')
-    better_print
+    while True:
+        better_print('добро пожаловать в магазин')
+        better_print(f'в вашем кошельке {player.money} монет')
+        better_print('что вы хотите сделать?\n0 - выйти из магазина\n1 - купить покебол\n2 - купить малое зелье здоровья\n3 - купить зелье здоровья\n4 - купить большое зелье здоровья\n5 - купить зелье силы')
+        choice = int(input())
+        if choice == 0:
+            break
+        if choice == 1:
+            better_print('сколько товаров вы хотите купить?')
+            quantity = int(input())
+            player.inventory['покебол'] += quantity
+        if choice == 2:
+            better_print('сколько товаров вы хотите купить?')
+            quantity = int(input())
+            player.inventory['малое зелье здоровья'] += quantity
+        if choice == 3:
+            better_print('сколько товаров вы хотите купить?')
+            quantity = int(input())
+            player.inventory['зелье здоровья'] += quantity
+        if choice == 4:
+            better_print('сколько товаров вы хотите купить?')
+            quantity = int(input())
+            player.inventory['большое зелье здоровья'] += quantity
+        if choice == 5:
+            better_print('сколько товаров вы хотите купить?')
+            quantity = int(input())
+            player.inventory['зелье силы'] += quantity
+        better_print('хотите продолжить покупки?\n1 - да\n2 - нет')
+        choice = int(input())
+        if choice == 1:
+            continue
+        if choice == 2:
+            break
+    better_print('приходите ещё!')
 
 
 pygame.mixer.init()
