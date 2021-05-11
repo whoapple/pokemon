@@ -6,6 +6,9 @@ p.init()
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 screen = p.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+p.display.set_caption("покемоны")
+p.display.set_icon("")
+
 clock = p.time.Clock()
 
 player = s.Player("images/player.png", (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
@@ -21,9 +24,11 @@ while running:
         if event.type == p.QUIT:
             running = False
 
-    screen.fill((255, 255, 255))
+    screen.fill((0, 0, 0))
 
     player_group.draw(screen)
+    player_group.update()
+
 
     p.display.flip()
     clock.tick(60)
