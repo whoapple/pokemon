@@ -5,7 +5,7 @@ class Player(p.sprite.Sprite):
     def __init__(self, img, pos):
         super().__init__()
         self.image = p.image.load(img)
-        self.image = p.transform.scale(self.image, (19*3, 29*3))
+        self.image = p.transform.scale(self.image, (1589//10, 827//10))
         self.rect = self.image.get_rect()
         self.rect.center = pos
 

@@ -7,7 +7,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 screen = p.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 p.display.set_caption("покемоны")
-p.display.set_icon("")
+
 
 clock = p.time.Clock()
 
