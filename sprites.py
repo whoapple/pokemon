@@ -1,11 +1,31 @@
 import pygame as p
 
 
+
+class SpriteSheet:
+    def __init__(self, file):
+        self.sprite_sheet = p.image.load(file)
+
+    def get_image(self, x, y, width, height):
+        # Вырезаем кусок картинки из спрайтлиста
+        image = p.Surface((width, height))
+        image.blit(self.sprite_sheet, (0, 0), (x, y, width, height))
+        return image
+
+
+player_sheet = SpriteSheet('images/sheet.png')
+
+
 class Player(p.sprite.Sprite):
-    def __init__(self, img, pos):
+    def __init__(self, pos):
         super().__init__()
-        self.image = p.image.load(img)
-        self.image = p.transform.scale(self.image, (1589//10, 827//10))
+
+        self.animation = False
+        self.players = []
+        # for i in range(1, 7):
+        #     self.players.append(p.image.load(f'images/player_{i}.png'))
+        # self.current_sprite = 0
+        self.image = player_sheet.get_image(0, 0, 32, 32)
         self.rect = self.image.get_rect()
         self.rect.center = pos
 
@@ -36,3 +56,25 @@ class Player(p.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom >= 720:
             self.rect.bottom = 720
+
+    def load_images(self):
+        self.down_walk = []
+        self.left_walk = []
+        self.right_walk = []
+        self.up_walk = []
+        x = 0
+        y = 0
+        while y <= 128:
+            
+            x += 32
+
+    # def running(self, speed):
+    #     # keys = p.key.get_pressed()
+    #     # if keys[p.K_SPACE]:
+    #     #     self.animation == True
+    #     if self.animation == True:
+    #         self.current_sprite += speed
+    #         if int(self.current_sprite) >= len(self.players):
+    #             self.current_sprite = 0
+    #             self.animation = False
+    #     self.image = self.players[int(self.current_sprite)]

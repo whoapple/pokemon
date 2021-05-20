@@ -1,5 +1,4 @@
 import pygame as p
-import time
 
 class Frog(p.sprite.Sprite):
     def __init__(self, pos):
