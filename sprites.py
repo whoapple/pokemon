@@ -1,10 +1,11 @@
 import pygame as p
-
+from pygame.math import Vector2
 
 
 class SpriteSheet:
     def __init__(self, file):
         self.sprite_sheet = p.image.load(file)
+        self.sprite_sheet = p.transform.scale(self.sprite_sheet, (256, 256))
 
     def get_image(self, x, y, width, height):
         # Вырезаем кусок картинки из спрайтлиста
@@ -12,16 +13,17 @@ class SpriteSheet:
         image.blit(self.sprite_sheet, (0, 0), (x, y, width, height))
         return image
 
-
-player_sheet = SpriteSheet('images/sheet.png')
-
-
 class Player(p.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, player_sheet, pos):
         super().__init__()
 
+        self.player_sheet = player_sheet
         self.animation = False
+        self.last_update = 0
+        self.frame = 0
         self.players = []
+        self.load_images()
+        self.animation_cycle = self.up_walk
         # for i in range(1, 7):
         #     self.players.append(p.image.load(f'images/player_{i}.png'))
         # self.current_sprite = 0
@@ -34,17 +36,20 @@ class Player(p.sprite.Sprite):
         self.current_pokemon = ''
         self.money = 0
 
+
     def update(self):
         # Выдаёт словарь {K_w: True}
+        self.velocity = Vector2(0, 0)
         keys = p.key.get_pressed()
         if keys[p.K_w]:
-            self.rect.y -= 5
-        if keys[p.K_s]:
-            self.rect.y += 5
-        if keys[p.K_a]:
-            self.rect.x -= 5
-        if keys[p.K_d]:
-            self.rect.x += 5
+            self.velocity.y = -1
+        elif keys[p.K_s]:
+            self.velocity.y = 1
+        elif keys[p.K_a]:
+            self.velocity.x = -1
+        elif keys[p.K_d]:
+            self.velocity.x = 1
+        self.rect.center += self.velocity * 5
         self.restrain()
 
     def restrain(self):
@@ -64,11 +69,15 @@ class Player(p.sprite.Sprite):
         self.up_walk = []
         x = 0
         y = 0
-        while y <= 128:
-            
-            x += 32
+        width = 64
+        height = 64
+        for x in range(0, 192, 64):
+            self.down_walk.append(self.player_sheet.get_image(x, 0, width, height))
+            self.left_walk.append(self.player_sheet.get_image(x, 64, width, height))
+            self.right_walk.append(self.player_sheet.get_image(x, 128, width, height))
+            self.up_walk.append(self.player_sheet.get_image(x, 192, width, height))
 
-    # def running(self, speed):
+    # def run(self, speed):
     #     # keys = p.key.get_pressed()
     #     # if keys[p.K_SPACE]:
     #     #     self.animation == True
@@ -78,3 +87,21 @@ class Player(p.sprite.Sprite):
     #             self.current_sprite = 0
     #             self.animation = False
     #     self.image = self.players[int(self.current_sprite)]
+
+    def animate(self):
+        now = p.time.get_ticks()
+        if now - self.last_update > 100:
+            self.last_update = now
+
+            if self.velocity == Vector2(0,0):
+                self.frame = -1
+            if self.velocity.x < 0:
+                self.animation_cycle = self.left_walk
+            if self.velocity.x > 0:
+                self.animation_cycle = self.right_walk
+            if self.velocity.y < 0:
+                self.animation_cycle = self.up_walk
+            if self.velocity.y > 0:
+                self.animation_cycle = self.down_walk
+            self.frame = (self.frame + 1) % len(self.animation_cycle)
+            self.image = self.animation_cycle[self.frame]
