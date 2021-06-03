@@ -10,6 +10,7 @@ clock = p.time.Clock()
 
 player_sheet = s.SpriteSheet('images/sheet.png')
 player = s.Player(player_sheet, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+map = s.Map("map.csv", "images/tilemap_packed.png", TILE_SIZE)
 
 player_group = p.sprite.GroupSingle()
 player_group.add(player)

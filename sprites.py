@@ -1,6 +1,6 @@
 import pygame as p
 from pygame.math import Vector2
-
+import csv
 
 class SpriteSheet:
     def __init__(self, file):
@@ -105,3 +105,20 @@ class Player(p.sprite.Sprite):
                 self.animation_cycle = self.down_walk
             self.frame = (self.frame + 1) % len(self.animation_cycle)
             self.image = self.animation_cycle[self.frame]
+
+
+class Map:
+    def __init__(self, csv_file, tile_map, tile_size, spacing=0):
+        self.csv_file = csv_file
+        self.tile_map = tile_map
+        self.tile_size = tile_size
+        self.spacing = spacing
+
+    def _csv_to_list(self, csv_file):
+        """Возвращает 2D список из csv файла."""
+        map_list = []
+        with open(csv_file) as file:
+            data = csv.reader(file)
+            for row in data:
+                map_list.append(row)
+        return map_list
