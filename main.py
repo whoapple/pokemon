@@ -10,12 +10,13 @@ clock = p.time.Clock()
 
 player_sheet = s.SpriteSheet('images/sheet.png')
 player = s.Player(player_sheet, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-map = s.Map("map.csv", "images/tilemap_packed.png", TILE_SIZE)
-
 player_group = p.sprite.GroupSingle()
 player_group.add(player)
 
-speed = 0
+tile_group = p.sprite.Group()
+map = s.Map(tile_group, "map.csv", "images/tilemap_packed.png", TILE_SIZE)
+map.load_map()
+
 
 running = True
 while running:
@@ -25,16 +26,18 @@ while running:
             running = False
     # for event in p.event.get():
     #     if event.type == p.KEYDOWN and event.key == p.K_d:
-    #         player.animation = True
+    #         player.animation = Truehttps://www.youtube.com/watch?v=DGN0Dk1Q26U
     #     elif event.type == p.QUIT or event.type == p.KEYDOWN:
     #         running = False
 
     screen.fill(BLACK)
 
+    tile_group.draw(screen)
     player_group.draw(screen)
     # player.run(0.1)
     player.update()
     player.animate()
+
 
     p.display.flip()
     clock.tick(60)

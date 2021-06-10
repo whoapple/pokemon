@@ -25,12 +25,14 @@ class Pokemon:
 
 
     def attack(self, opponent):
+        """Атака оппонентов"""
         better_print(f'\n{self.name} атакует {opponent.name}')
         opponent.hp -= int((self.atk/opponent._def)*(self.total/50)*random.uniform(1.5, 3.0))
         self.show_stats(opponent)
 
 
     def show_stats(self, target):
+        """Отображение статов"""
         better_print(f"HP: {target.hp} ({int(100/target.max_hp*target.hp)}%)")
 
 
@@ -43,6 +45,7 @@ class Player:
 
 
 def fight():
+    """Бой"""
     enemy_pok = ''
     player_pok = player.current_pokemon
 
@@ -121,6 +124,7 @@ def fight():
 
 
 def better_print(word):
+    """Принт как в играх 90-х"""
     for i in word:
         print(i, end='', flush='True')
         time.sleep(0.03)
@@ -128,6 +132,7 @@ def better_print(word):
 
 
 def heal():
+    """Лечение покемонов"""
     for pokemon in player.pokemon_list:
         pokemon.hp = pokemon.max_hp
     pygame.mixer.Sound('heal.m4a').play()
@@ -135,6 +140,7 @@ def heal():
 
 
 def shop():
+    """Магазин"""
     while True:
         better_print('добро пожаловать в магазин')
         better_print(f'в вашем кошельке {player.money} монет')

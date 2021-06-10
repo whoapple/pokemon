@@ -1,6 +1,8 @@
 import pygame as p
 from pygame.math import Vector2
 import csv
+from settings import *
+
 
 class SpriteSheet:
     def __init__(self, file):
@@ -8,9 +10,10 @@ class SpriteSheet:
         self.sprite_sheet = p.transform.scale(self.sprite_sheet, (256, 256))
 
     def get_image(self, x, y, width, height):
+        """Принимает спайтлист"""
         # Вырезаем кусок картинки из спрайтлиста
-        image = p.Surface((width, height))
-        image.blit(self.sprite_sheet, (0, 0), (x, y, width, height))
+        image = self.sprite_sheet.subsurface(x, y, width, height)
+
         return image
 
 class Player(p.sprite.Sprite):
@@ -38,6 +41,7 @@ class Player(p.sprite.Sprite):
 
 
     def update(self):
+        """Движение модели"""
         # Выдаёт словарь {K_w: True}
         self.velocity = Vector2(0, 0)
         keys = p.key.get_pressed()
@@ -53,6 +57,7 @@ class Player(p.sprite.Sprite):
         self.restrain()
 
     def restrain(self):
+        """Ограничения экрана"""
         if self.rect.right >= 1280:
             self.rect.right = 1280
         if self.rect.left <= 0:
@@ -63,6 +68,7 @@ class Player(p.sprite.Sprite):
             self.rect.bottom = 720
 
     def load_images(self):
+        """Разделение спрайтлиста на кадры анимации"""
         self.down_walk = []
         self.left_walk = []
         self.right_walk = []
@@ -77,18 +83,9 @@ class Player(p.sprite.Sprite):
             self.right_walk.append(self.player_sheet.get_image(x, 128, width, height))
             self.up_walk.append(self.player_sheet.get_image(x, 192, width, height))
 
-    # def run(self, speed):
-    #     # keys = p.key.get_pressed()
-    #     # if keys[p.K_SPACE]:
-    #     #     self.animation == True
-    #     if self.animation == True:
-    #         self.current_sprite += speed
-    #         if int(self.current_sprite) >= len(self.players):
-    #             self.current_sprite = 0
-    #             self.animation = False
-    #     self.image = self.players[int(self.current_sprite)]
 
     def animate(self):
+        """Анимирование движения"""
         now = p.time.get_ticks()
         if now - self.last_update > 100:
             self.last_update = now
@@ -108,11 +105,13 @@ class Player(p.sprite.Sprite):
 
 
 class Map:
-    def __init__(self, csv_file, tile_map, tile_size, spacing=0):
+    def __init__(self, group, csv_file, tile_map, tile_size, spacing=0):
         self.csv_file = csv_file
         self.tile_map = tile_map
         self.tile_size = tile_size
         self.spacing = spacing
+        self.group = group
+        self._parse_image()
 
     def _csv_to_list(self, csv_file):
         """Возвращает 2D список из csv файла."""
@@ -122,3 +121,38 @@ class Map:
             for row in data:
                 map_list.append(row)
         return map_list
+
+    def _parse_image(self):
+        index_to_image_map = {}
+        image = p.image.load(self.tile_map)
+
+        width = image.get_width()
+        height = image.get_height()
+        index = 0
+        for y in range(0, height, TILE_SIZE):
+            for x in range(0, width, TILE_SIZE):
+                tile = image.subsurface(x, y, TILE_SIZE, TILE_SIZE)
+                index_to_image_map[index] = tile
+                index += 1
+        return index_to_image_map
+
+    def _load_tiles(self, map_list, index_to_image_map):
+        for i, row in enumerate(map_list):
+            for j, index in enumerate(row):
+                Tile(self.group, j, i, index_to_image_map[int(index)])
+
+    def load_map(self):
+        map_list = self._csv_to_list(self.csv_file)
+        index_to_image_map = self._parse_image()
+        self._load_tiles(map_list, index_to_image_map)
+
+
+class Tile(p.sprite.Sprite):
+    def __init__(self, group, x, y, image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.group = group
+        self.rect.x = x * TILE_SIZE
+        self.rect.y = y * TILE_SIZE
+        self.group.add(self)
