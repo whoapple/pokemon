@@ -8,13 +8,13 @@ screen = p.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 p.display.set_caption("player")
 clock = p.time.Clock()
 
-player_sheet = s.SpriteSheet('images/sheet.png')
+player_sheet = s.SpriteSheet('images/sheet.png', 4)
 player = s.Player(player_sheet, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
 player_group = p.sprite.GroupSingle()
 player_group.add(player)
 
 tile_group = p.sprite.Group()
-map = s.Map(tile_group, "map.csv", "images/tilemap_packed.png", TILE_SIZE)
+map = s.Map(tile_group, "map.csv", "images/tilemap_packed.png", 16)
 map.load_map()
 
 

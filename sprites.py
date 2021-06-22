@@ -5,9 +5,18 @@ from settings import *
 
 
 class SpriteSheet:
-    def __init__(self, file):
-        self.sprite_sheet = p.image.load(file)
-        self.sprite_sheet = p.transform.scale(self.sprite_sheet, (256, 256))
+    def __init__(self, file, animation_len):
+        self.sprite_sheet = p.image.load(file).convert_alpha()
+        self.animation_len = animation_len
+        self.size = Vector2(self.sprite_sheet.get_rect().size)
+        sprite_size = self.size / animation_len
+        ratio = sprite_size.x / TILE_SIZE
+        target_size = self.size / ratio
+        self.sprite_size = sprite_size / ratio
+        self.sprite_sheet = p.transform.scale(self.sprite_sheet,
+                                             (int(target_size.x), int(target_size.y)))
+        self.size = Vector2(self.sprite_sheet.get_rect().size)
+
 
     def get_image(self, x, y, width, height):
         """Принимает спайтлист"""
@@ -73,15 +82,13 @@ class Player(p.sprite.Sprite):
         self.left_walk = []
         self.right_walk = []
         self.up_walk = []
-        x = 0
-        y = 0
-        width = 64
-        height = 64
-        for x in range(0, 192, 64):
-            self.down_walk.append(self.player_sheet.get_image(x, 0, width, height))
-            self.left_walk.append(self.player_sheet.get_image(x, 64, width, height))
-            self.right_walk.append(self.player_sheet.get_image(x, 128, width, height))
-            self.up_walk.append(self.player_sheet.get_image(x, 192, width, height))
+
+        w, h = self.player_sheet.sprite_size
+        for x in range(0, int(self.player_sheet.size.x), TILE_SIZE):
+            self.down_walk.append(self.player_sheet.get_image(x, 0, w, h))
+            self.left_walk.append(self.player_sheet.get_image(x, h, w, h))
+            self.right_walk.append(self.player_sheet.get_image(x, h*2, w, h))
+            self.up_walk.append(self.player_sheet.get_image(x, h*3, w, h))
 
 
     def animate(self):
@@ -125,6 +132,15 @@ class Map:
     def _parse_image(self):
         index_to_image_map = {}
         image = p.image.load(self.tile_map)
+
+        if self.tile_size != TILE_SIZE:
+            ratio = TILE_SIZE // self.tile_size
+            current_size = image.get_rect().size
+            # target_size = (current_size[0]*ratio, current_size[1]*ratio)
+            target_size = tuple(i * ratio for i in current_size)
+            image = p.transform.scale(image, target_size)
+
+
 
         width = image.get_width()
         height = image.get_height()
