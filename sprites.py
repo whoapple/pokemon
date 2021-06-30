@@ -3,7 +3,6 @@ from pygame.math import Vector2
 import csv
 from settings import *
 
-
 class SpriteSheet:
     def __init__(self, file, animation_len):
         self.sprite_sheet = p.image.load(file).convert_alpha()
@@ -26,8 +25,10 @@ class SpriteSheet:
         return image
 
 class Player(p.sprite.Sprite):
-    def __init__(self, player_sheet, pos):
-        super().__init__()
+    def __init__(self, game, player_sheet, pos):
+        self._layer = PLAYER_LAYER
+        self.groups = game.all_sprites
+        super().__init__(self.groups)
 
         self.player_sheet = player_sheet
         self.animation = False
@@ -63,7 +64,7 @@ class Player(p.sprite.Sprite):
         elif keys[p.K_d]:
             self.velocity.x = 1
         self.rect.center += self.velocity * 5
-        self.restrain()
+        # self.restrain()
 
     def restrain(self):
         """Ограничения экрана"""
@@ -112,12 +113,12 @@ class Player(p.sprite.Sprite):
 
 
 class Map:
-    def __init__(self, group, csv_file, tile_map, tile_size, spacing=0):
+    def __init__(self, game, csv_file, tile_map, tile_size, spacing=0):
+        self.game = game
         self.csv_file = csv_file
         self.tile_map = tile_map
         self.tile_size = tile_size
         self.spacing = spacing
-        self.group = group
         self._parse_image()
 
     def _csv_to_list(self, csv_file):
@@ -155,20 +156,41 @@ class Map:
     def _load_tiles(self, map_list, index_to_image_map):
         for i, row in enumerate(map_list):
             for j, index in enumerate(row):
-                Tile(self.group, j, i, index_to_image_map[int(index)])
+                Tile(self.game, j, i, index_to_image_map[int(index)])
 
     def load_map(self):
         map_list = self._csv_to_list(self.csv_file)
         index_to_image_map = self._parse_image()
         self._load_tiles(map_list, index_to_image_map)
+        self.width = len(map_list[0]) * TILE_SIZE
+        self.height = len(map_list) * TILE_SIZE
 
 
 class Tile(p.sprite.Sprite):
-    def __init__(self, group, x, y, image):
-        super().__init__()
+    def __init__(self, game, x, y, image):
+        self._layer = GROUND_LAYER
+        self.groups = game.all_sprites
+        super().__init__(self.groups)
         self.image = image
         self.rect = self.image.get_rect()
-        self.group = group
         self.rect.x = x * TILE_SIZE
         self.rect.y = y * TILE_SIZE
-        self.group.add(self)
+
+
+class Camera:
+    def __init__(self, map_width, map_height):
+        self.offset = (0, 0)
+        self.map_width = map_width
+        self.map_height = map_height
+
+    def apply(self, entity):
+        return entity.rect.move(self.offset)
+
+    def update(self, target):
+        x = -target.rect.x + SCREEN_WIDTH // 2
+        y = -target.rect.y + SCREEN_HEIGHT // 2
+        x = min(x, 0)
+        y = min(y, 0)
+        x = max(x, -self.map_width + SCREEN_WIDTH)
+        y = max(y, -self.map_height + SCREEN_HEIGHT)
+        self.offset = (x, y)
