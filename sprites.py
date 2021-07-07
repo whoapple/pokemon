@@ -26,6 +26,7 @@ class SpriteSheet:
 
 class Player(p.sprite.Sprite):
     def __init__(self, game, player_sheet, pos):
+        self.game = game
         self._layer = PLAYER_LAYER
         self.groups = game.all_sprites
         super().__init__(self.groups)
@@ -41,7 +42,8 @@ class Player(p.sprite.Sprite):
         #     self.players.append(p.image.load(f'images/player_{i}.png'))
         # self.current_sprite = 0
         self.image = player_sheet.get_image(0, 0, 32, 32)
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect().inflate(0, -TILE_SIZE*0.5)
+
         self.rect.center = pos
 
         self.inventory = {'малое зелье здоровья':0, "покебол":0, 'зелье здоровья':0, 'большое зелье здоровья':0, 'зелье силы':0}
@@ -63,8 +65,17 @@ class Player(p.sprite.Sprite):
             self.velocity.x = -1
         elif keys[p.K_d]:
             self.velocity.x = 1
-        self.rect.center += self.velocity * 5
+        self.velocity = self.velocity * PLAYER_SPEED * self.game.dt
+        if not self._is_colliding():
+            self.rect.center += self.velocity
         # self.restrain()
+
+    def _is_colliding(self):
+        target_rect = self.rect.move(self.velocity)
+        for tile in self.game.walls:
+            if target_rect.colliderect(tile.rect):
+                return True
+        return False
 
     def restrain(self):
         """Ограничения экрана"""
@@ -95,7 +106,7 @@ class Player(p.sprite.Sprite):
     def animate(self):
         """Анимирование движения"""
         now = p.time.get_ticks()
-        if now - self.last_update > 100:
+        if now - self.last_update > 100 * self.game.dt * FPS:
             self.last_update = now
 
             if self.velocity == Vector2(0,0):
@@ -141,8 +152,6 @@ class Map:
             target_size = tuple(i * ratio for i in current_size)
             image = p.transform.scale(image, target_size)
 
-
-
         width = image.get_width()
         height = image.get_height()
         index = 0
@@ -156,7 +165,11 @@ class Map:
     def _load_tiles(self, map_list, index_to_image_map):
         for i, row in enumerate(map_list):
             for j, index in enumerate(row):
-                Tile(self.game, j, i, index_to_image_map[int(index)])
+                if int(index) in WALLS:
+                    Tile(self.game, j, i, index_to_image_map[int(index)], True)
+                else:
+                    Tile(self.game, j, i, index_to_image_map[int(index)], False)
+
 
     def load_map(self):
         map_list = self._csv_to_list(self.csv_file)
@@ -167,15 +180,18 @@ class Map:
 
 
 class Tile(p.sprite.Sprite):
-    def __init__(self, game, x, y, image):
+    def __init__(self, game, x, y, image, is_wall):
+        self.is_wall = is_wall
         self._layer = GROUND_LAYER
-        self.groups = game.all_sprites
+        if is_wall:
+            self.groups = game.all_sprites, game.walls
+        else:
+            self.groups = game.all_sprites
         super().__init__(self.groups)
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = x * TILE_SIZE
         self.rect.y = y * TILE_SIZE
-
 
 class Camera:
     def __init__(self, map_width, map_height):

@@ -13,6 +13,7 @@ class Game:
     def new(self):
         self.player_sheet = s.SpriteSheet('images/sheet.png', 4)
         self.all_sprites = p.sprite.LayeredUpdates()
+        self.walls = p.sprite.Group()
         self.player = s.Player(self, self.player_sheet, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
         self.map = s.Map(self, "map.csv", "images/tilemap_packed.png", 16)
         self.map.load_map()
@@ -38,11 +39,10 @@ class Game:
     def run(self):
         self.running = True
         while self.running:
-            self.clock.tick(60)
+            self.dt = self.clock.tick(FPS) / 1000
             self._events()
             self._update()
             self._draw()
-
 
 
 if __name__ == "__main__":
