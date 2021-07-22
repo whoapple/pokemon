@@ -1,7 +1,9 @@
+import random
 import pygame as p
 from pygame.math import Vector2
 import csv
 from settings import *
+
 
 class SpriteSheet:
     def __init__(self, file, animation_len):
@@ -66,13 +68,17 @@ class Player(p.sprite.Sprite):
         elif keys[p.K_d]:
             self.velocity.x = 1
         self.velocity = self.velocity * PLAYER_SPEED * self.game.dt
-        if not self._is_colliding():
+        if not self._is_colliding(self.game.walls):
             self.rect.center += self.velocity
+        if (self.velocity != Vector2(0, 0)
+                            and self._is_colliding(self.game.grass)
+                            and random.randint(1, BATTLE_CHANCE) == 1):
+            self.game.state = 'BATTLE'
         # self.restrain()
 
-    def _is_colliding(self):
+    def _is_colliding(self, group):
         target_rect = self.rect.move(self.velocity)
-        for tile in self.game.walls:
+        for tile in group:
             if target_rect.colliderect(tile.rect):
                 return True
         return False
@@ -167,6 +173,9 @@ class Map:
             for j, index in enumerate(row):
                 if int(index) in WALLS:
                     Tile(self.game, j, i, index_to_image_map[int(index)], True)
+                elif int(index) in GRASS:
+                    Tile(self.game, j, i, index_to_image_map[int(index)], False,
+                                                                  is_grass=True)
                 else:
                     Tile(self.game, j, i, index_to_image_map[int(index)], False)
 
@@ -180,11 +189,12 @@ class Map:
 
 
 class Tile(p.sprite.Sprite):
-    def __init__(self, game, x, y, image, is_wall):
-        self.is_wall = is_wall
+    def __init__(self, game, x, y, image, is_wall, is_grass=False):
         self._layer = GROUND_LAYER
         if is_wall:
             self.groups = game.all_sprites, game.walls
+        elif is_grass:
+            self.groups = game.all_sprites, game.grass
         else:
             self.groups = game.all_sprites
         super().__init__(self.groups)
